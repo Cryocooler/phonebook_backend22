@@ -2,6 +2,9 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../fs-2022/part2"
 		}
 	],
 	"settings": {}
