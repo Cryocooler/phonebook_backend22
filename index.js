@@ -1,41 +1,42 @@
-require('dotenv').config()
+require("dotenv").config();
 
+const { resp } = require("express");
+const express = require("express");
+const app = express();
+const morgan = require("morgan");
+const cors = require("cors");
 
-const { resp } = require('express')
-const express = require('express')
-const app = express()
-const morgan = require('morgan')
-const cors = require('cors')
+const Person = require("./models/person");
 
-const Person = require('./models/person')
-
-app.use(express.static('build'))
-app.use(cors())
-morgan.token('pb', (req, response) => {
-  if(req.method === 'POST') return JSON.stringify(req.body)
-})
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :pb'))
-app.use(express.json())
+app.use(express.static("build"));
+app.use(cors());
+morgan.token("pb", (req, response) => {
+  if (req.method === "POST") return JSON.stringify(req.body);
+});
+app.use(
+  morgan(":method :url :status :res[content-length] - :response-time ms :pb")
+);
+app.use(express.json());
 
 // let persons = [
-//     { 
+//     {
 //       "id": 1,
-//       "name": "Arto Hellas", 
+//       "name": "Arto Hellas",
 //       "number": "040-123456"
 //     },
-//     { 
+//     {
 //       "id": 2,
-//       "name": "Ada Lovelace", 
+//       "name": "Ada Lovelace",
 //       "number": "39-44-5323523"
 //     },
-//     { 
+//     {
 //       "id": 3,
-//       "name": "Dan Abramov", 
+//       "name": "Dan Abramov",
 //       "number": "12-43-234345"
 //     },
-//     { 
+//     {
 //       "id": 4,
-//       "name": "Mary Poppendieck", 
+//       "name": "Mary Poppendieck",
 //       "number": "39-23-6423122"
 //     },
 
@@ -46,73 +47,87 @@ app.use(express.json())
 //     }
 // ]
 
-app.get('/api/persons', (req, resp) => {
-    Person.find({})
-      .then(person => {resp.json(person)})
-      resp.json(persons)
-      console.log(persons)
-   
-  })
+app.get("/api/persons", (req, resp) => {
+  Person.find({}).then((person) => {
+    resp.json(person);
+  });
+  resp.json(persons);
+  console.log(persons);
+});
 
-app.get('/info', (req, resp) => {
-    console.log('response params', Object.keys(req))
-    Person.find({})
-      .then(persons => {
-      resp.send(`Phonebook has info for ${persons.length} people
-      <br>${new Date().toString()}</br>`)
-      })
-    
-})
+app.get("/info", (req, resp) => {
+  console.log("response params", Object.keys(req));
+  Person.find({}).then((persons) => {
+    resp.send(`Phonebook has info for ${persons.length} people
+      <br>${new Date().toString()}</br>`);
+  });
+});
 
-app.get('/api/persons/:id', (req, res) => {
-    Person.findById(req.params.id)
-      .then(person => {
-        if (person) {
-          res.json(person)
-        } else {
-          res.status(404).end()
-        }
-    })
+app.get("/api/persons/:id", (req, res) => {
+  Person.findById(req.params.id).then((person) => {
+    if (person) {
+      res.json(person);
+    } else {
+      res.status(404).end();
+    }
+  });
+});
 
-app.delete('/api/persons/:id', (req, resp) => {
-  Person.findByIdAndRemove(req.params.id)
-    .then(result => {
-      res.status(204).end()
-      })
-    //.catch(error => next(error))
+app.delete("/api/persons/:id", (req, resp) => {
+  Person.findByIdAndRemove(req.params.id).then((result) => {
+    res.status(204).end();
+  });
+  //.catch(error => next(error))
+});
 
-})
+const generateID = () => {
+  return Math.floor(Math.random() * (100 - 10) + 10);
+};
 
-const generateID = () => {return Math.floor(Math.random() * (100-10) + 10)}
-
-
-app.post('/api/persons', (req, res) => {
-  const body = req.body
+app.post("/api/persons", (req, res) => {
+  const body = req.body;
 
   const newPerson = new Person({
     name: body.name,
     number: body.number,
-    
-  })
+  });
 
-  if (!body.name || !body.number) {
-    return resp.status(400).json({ 
-      error: 'name or number missing'
-    })
-  } else if (persons.map(person => person.name).includes(body.name)) {
+  if (!body.name || !body.number) {
     return resp.status(400).json({
-      error: "name must be unique"
-    })
+      error: "name or number missing",
+    });
+  } else if (persons.map((person) => person.name).includes(body.name)) {
+    return resp.status(400).json({
+      error: "name must be unique",
+    });
   }
 
-  newPerson.save()
-    .then(savedPerson => {res.json(savedPerson)})
-  
-    console.log(req.body)
+  newPerson.save().then((savedPerson) => {
+    res.json(savedPerson);
+  });
 
-})
+  console.log(req.body);
+});
 
+app.put("/api/persons/:id", (req, res, next) => {
+  const body = req.body;
+  console.log(req.body);
+  const person = {
+    name: body.name,
+    number: body.number,
+  };
 
-const PORT = process.env.PORT || 3001
-app.listen(PORT)
-console.log(`Server running on port ${PORT}`)
+  Person.findByIdAndUpdate(req.params.id, person, {
+    new: true,
+    runValidators: true,
+  })
+    .then((updatedPerson) => {
+      res.json(updatedPerson);
+    })
+    .catch((error) => next(error));
+});
+
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
