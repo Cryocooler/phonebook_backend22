@@ -15,7 +15,17 @@ mongoose
 
 const personSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true, minlength: 3 },
-  number: { type: String, required: true, minlength: 8 },
+  number: {
+    type: String,
+    validate: {
+      validator: function (v) {
+        return /\d{2}-|\d{3}-\d*/.test(v);
+      },
+    },
+    message: (props) => `${props.value} is not a valid number!`,
+    required: true,
+    minlength: 8,
+  },
 });
 
 personSchema.plugin(validator);
