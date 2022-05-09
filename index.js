@@ -97,7 +97,7 @@ const generateID = () => {
 };
 
 app.post("/api/persons", (request, response, next) => {
-  console.log("POST TRIGGER");
+  //console.log("POST TRIGGER");
   const body = request.body;
   //console.log('persons', persons.filter(person => person.name === body.name))
 
