@@ -147,10 +147,10 @@ app.put("/api/persons/:id", (req, res, next) => {
     .then((updatedPerson) => {
       res.json(updatedPerson);
     })
-    .catch((error) => {
+    .catch((error) =>
       //console.log("PUT ERROR");
-      console.log(error.res.data);
-    });
+      next(error)
+    );
 });
 
 const PORT = process.env.PORT || 3001;
