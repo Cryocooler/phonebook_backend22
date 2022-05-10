@@ -1,6 +1,5 @@
 require("dotenv").config();
 
-const { res } = require("express");
 const express = require("express");
 const app = express();
 const morgan = require("morgan");
@@ -8,7 +7,7 @@ const cors = require("cors");
 
 const Person = require("./models/person");
 
-const errorHandler = (error, request, response, next) => {
+const errorHandler = (error, response, next) => {
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
   } else if (error.name === "ValidationError") {
@@ -20,7 +19,7 @@ const errorHandler = (error, request, response, next) => {
 
 app.use(express.static("build"));
 app.use(cors());
-morgan.token("pb", (req, response) => {
+morgan.token("pb", (req) => {
   if (req.method === "POST") return JSON.stringify(req.body);
 });
 app.use(
@@ -57,7 +56,7 @@ app.use(express.json());
 //     }
 // ]
 
-app.get("/api/persons", (request, response) => {
+app.get("/api/persons", (_request, response) => {
   Person.find({}).then((person) => {
     response.json(person);
   });
@@ -85,16 +84,12 @@ app.get("/api/persons/:id", (req, res, next) => {
 
 app.delete("/api/persons/:id", (req, res, next) => {
   Person.findByIdAndRemove(req.params.id)
-    .then((result) => {
+    .then((res) => {
       res.status(204).end();
     })
     .catch((error) => next(error));
   //.catch(error => next(error))
 });
-
-const generateID = () => {
-  return Math.floor(Math.random() * (100 - 10) + 10);
-};
 
 app.post("/api/persons", (request, response, next) => {
   //console.log("POST TRIGGER");
